@@ -3,7 +3,7 @@
 #  Inventory Management System - Build & Run Script (Linux/Mac)
 # ============================================================
 
-JAR="lib/sqlite-jdbc-3.45.3.0.jar"
+JAR="JAR="lib/sqlite-jdbc-3.53.0.0-natives-all.jar"
 BIN="bin"
 SRC="src"
 

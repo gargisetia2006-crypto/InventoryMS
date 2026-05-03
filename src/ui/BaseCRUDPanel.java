@@ -19,11 +19,11 @@ public abstract class BaseCRUDPanel extends JPanel {
         setLayout(new BorderLayout(0, 0));
         setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
         buildUI();
-        loadData();
+
+        // ❌ REMOVED loadData() from here
     }
 
     private void buildUI() {
-        // Top bar
         JPanel topBar = new JPanel(new BorderLayout(10, 0));
         topBar.setOpaque(false);
         topBar.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
@@ -54,7 +54,6 @@ public abstract class BaseCRUDPanel extends JPanel {
         topBar.add(rightBar, BorderLayout.EAST);
         add(topBar, BorderLayout.NORTH);
 
-        // Table
         tableModel = new DefaultTableModel(getColumns(), 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -68,22 +67,42 @@ public abstract class BaseCRUDPanel extends JPanel {
         sp.setBorder(BorderFactory.createLineBorder(Theme.BORDER, 1));
         add(sp, BorderLayout.CENTER);
 
-        // Wire events
         btnAdd.addActionListener(e -> showAddDialog());
+
         btnEdit.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row < 0) { JOptionPane.showMessageDialog(this, "Please select a row to edit."); return; }
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Please select a row to edit.");
+                return;
+            }
             showEditDialog(row);
         });
+
         btnDelete.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row < 0) { JOptionPane.showMessageDialog(this, "Please select a row to delete."); return; }
-            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this record?", "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (row < 0) {
+                JOptionPane.showMessageDialog(this, "Please select a row to delete.");
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to delete this record?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
             if (confirm == JOptionPane.YES_OPTION) deleteRow(row);
         });
-        btnRefresh.addActionListener(e -> { searchField.setText(""); loadData(); });
+
+        btnRefresh.addActionListener(e -> {
+            searchField.setText("");
+            loadData(); // ✅ safe here (after full init)
+        });
+
         searchField.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) { onSearch(searchField.getText().trim()); }
+            public void keyReleased(KeyEvent e) {
+                onSearch(searchField.getText().trim());
+            }
         });
     }
 
@@ -96,12 +115,16 @@ public abstract class BaseCRUDPanel extends JPanel {
 
     protected JTextField labeledField(String label, JPanel panel, GridBagConstraints gbc, int row) {
         gbc.gridx = 0; gbc.gridy = row;
-        JLabel lbl = new JLabel(label); lbl.setForeground(Theme.TEXT_MUTED); lbl.setFont(Theme.FONT_BODY);
+        JLabel lbl = new JLabel(label);
+        lbl.setForeground(Theme.TEXT_MUTED);
+        lbl.setFont(Theme.FONT_BODY);
         panel.add(lbl, gbc);
+
         gbc.gridx = 1;
         JTextField field = new JTextField(20);
         Theme.styleField(field);
         panel.add(field, gbc);
+
         return field;
     }
 

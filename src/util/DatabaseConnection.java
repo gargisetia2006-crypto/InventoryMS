@@ -3,13 +3,19 @@ package util;
 import java.sql.*;
 
 public class DatabaseConnection {
+
     private static final String DB_URL = "jdbc:sqlite:inventory.db";
     private static Connection connection;
 
     public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
-            // ❌ REMOVED: Class.forName("org.sqlite.JDBC");
-            // Modern JDBC auto-loads driver
+
+            try {
+                // ✅ FORCE driver load (important in your case)
+                Class.forName("org.sqlite.JDBC");
+            } catch (ClassNotFoundException e) {
+                throw new SQLException("SQLite JDBC Driver NOT FOUND. Check your lib folder.");
+            }
 
             connection = DriverManager.getConnection(DB_URL);
             connection.setAutoCommit(true);
@@ -18,7 +24,8 @@ public class DatabaseConnection {
     }
 
     public static void initializeDatabase() {
-        try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
 
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS products (
@@ -128,10 +135,10 @@ public class DatabaseConnection {
                 )
             """);
 
-            System.out.println("Database initialized successfully.");
+            System.out.println("✅ Database initialized successfully.");
 
         } catch (SQLException e) {
-            System.err.println("Error initializing database: " + e.getMessage());
+            System.err.println("❌ Database error: " + e.getMessage());
         }
     }
 }
